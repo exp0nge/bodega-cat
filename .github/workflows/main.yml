@@ -1,0 +1,31 @@
+
+# This is a basic workflow to help you get started with Actions
+
+name: Valist Publish
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the "master" branch
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: echo "TIMESTAMP=$(date +%Y%m%d%H%M)" >> $GITHUB_ENV
+      - run: yarn && yarn build
+      - uses: valist-io/valist-github-action@v2.3.1
+        with:
+          private-key: ${{ secrets.PRIVATE_KEY }}
+          account: exp0nge
+          project: bodega-cat
+          release: ${{ env.TIMESTAMP }}
+          path: 'build'
