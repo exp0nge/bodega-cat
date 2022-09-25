@@ -1,7 +1,6 @@
-import { Chain, Network, Wallet } from 'mintbase';
+import { Network, Wallet } from 'mintbase';
 import {
     createContext,
-    ReactNode,
     useEffect,
     useState,
     useContext,

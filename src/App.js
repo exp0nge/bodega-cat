@@ -1,14 +1,8 @@
 import React from 'react';
 import {
   ChakraProvider,
-  Box,
-  Text,
-  VStack,
-  AspectRatio,
-  Grid,
   theme,
 } from '@chakra-ui/react';
-import { ColorModeSwitcher } from './ColorModeSwitcher';
 import CallToAction from './Cta';
 import Sidebar from './Sidebar';
 import Admin from './Admin';

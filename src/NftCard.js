@@ -7,10 +7,8 @@ import {
     Stack,
     Button,
     Link,
-    Badge,
     useColorModeValue,
 } from '@chakra-ui/react';
-import { useNavigate } from "react-router-dom";
 
 function navigate(id) {
     if (id > 0) window.location.href = 'view?id=' + id;
