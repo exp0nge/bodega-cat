@@ -24,7 +24,7 @@ export default function NftCard(nftData) {
                 textAlign={'center'}>
                 <Avatar
                     size={'xl'}
-                    src={nftData.picture_href + "/file.jpeg"}
+                    src={"https://ipfs.io/ipfs/" + nftData.picture_href + "/file.jpeg"}
                     alt={nftData.cat_name}
                     mb={4}
                     pos={'relative'}

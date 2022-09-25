@@ -23,11 +23,6 @@ import React, { useEffect, useState } from "react";
 import { getAll } from './tableland-tools';
 import * as L from "leaflet";
 
-interface FeatureProps {
-    heading: string;
-    text: string;
-}
-
 const LeafIcon = L.Icon.extend({
     options: {}
 });
@@ -134,7 +129,7 @@ export default function CallToAction() {
                         md: 'repeat(4, 1fr)',
                     }}
                     gap={{ base: '1', sm: '12', md: '8' }}>
-                    {!hasData && createNftCard({})}
+                    {!hasData && createNftCard([-1])}
                     {hasData && hasData.map(data => createNftCard(data))}
                 </Grid>
             </Skeleton>

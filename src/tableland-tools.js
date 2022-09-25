@@ -9,12 +9,12 @@ const provider = new providers.JsonRpcProvider(
 );
 const signer = wallet.connect(provider);
 
-// tableland name BodegaCat_80001_2994
-const name = "BodegaCat_80001_2994";
+// tableland name BodegaCat_80001_3008
+const name = "BodegaCat_80001_3008";
 
 window.Buffer = window.Buffer || require("buffer").Buffer;
 
-export const SCHEMA_VERSION = 6;
+export const SCHEMA_VERSION = 7;
 
 export async function initTableland() {
     console.log("tableland create starting");
@@ -25,7 +25,7 @@ export async function initTableland() {
     });
     console.log("creating table");
     const { name } = await tableland.create(
-        `id INT, cat_name TEXT, contributor_id TEXT, coordinates TEXT, picture_href TEXT, nftport_blob TEXT, cat_attributes TEXT, created_at TEXT, version INT, PRIMARY KEY (id)`,
+        `id INT, cat_name TEXT, contributor_id TEXT, coordinates TEXT, picture_href TEXT, nftport_blob TEXT, cat_attributes TEXT, created_at TEXT, skale_link TEXT, version INT, PRIMARY KEY (id)`,
         { prefix: `BodegaCat` }
     );
     console.log("table create done!");
@@ -39,7 +39,7 @@ export async function put(k) {
         chain: 'polygon-mumbai',
         signer: signer,
     });
-    const sql = `INSERT INTO ${name} VALUES ('${k.id}', '${k.cat_name}', '${k.contributor_id}', '${k.coordinates}', '${k.picture_href}', '${k.nftport_blob}', '${k.cat_attributes}', '${k.created_at}', '${k.version}' );`;
+    const sql = `INSERT INTO ${name} VALUES ('${k.id}', '${k.cat_name}', '${k.contributor_id}', '${k.coordinates}', '${k.picture_href}', '${k.nftport_blob}', '${k.cat_attributes}', '${k.created_at}', '${k.skale_link}', '${k.version}' );`;
     console.log("sql", sql);
     return await tableland.write(sql);
 }

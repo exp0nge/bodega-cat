@@ -24,6 +24,7 @@ import { useForm } from 'react-hook-form'
 import { mintUsingNftPort } from './nftport';
 import { uploadImgToNftStorage } from './nftstorage-tools';
 import { put as putTableland, SCHEMA_VERSION } from './tableland-tools';
+import { uploadToSkale } from './skale-tools';
 
 const confetti = {
     light: {
@@ -60,25 +61,29 @@ export default function ContactFormWithSocialButtons() {
         const generatedId = getRandomArbitrary(100, 1000000);
         console.log("generatedId", generatedId);
         const fileToUpload = values.picture_location[0];
-        const nftportResult = await mintUsingNftPort(fileToUpload, {
-            id: generatedId,
-            description: values.cat_attributes
-        });
-        console.log("nftport result", nftportResult.data);
+        // const nftportResult = await mintUsingNftPort(fileToUpload, {
+        //     id: generatedId,
+        //     description: values.cat_attributes
+        // });
+        // console.log("nftport result", nftportResult.data);
 
         const nftStorage = await uploadImgToNftStorage(fileToUpload);
         console.log("nftStorage result", nftStorage.data.value.cid);
+
+        const skaleUpload = await uploadToSkale(fileToUpload);
+        console.log("skaleUpload result", skaleUpload.data);
 
         const tblLandInsert = await putTableland({
             id: generatedId,
             cat_name: values.cat_name,
             contributor_id: values.contributor_id,
             coordinates: values.coordinates,
-            picture_href: "https://ipfs.io/ipfs/" + nftStorage.data.value.cid,
-            nftport_blob: JSON.stringify(nftportResult.data),
-            // nftport_blob: JSON.stringify({}),
+            picture_href: nftStorage.data.value.cid,
+            // nftport_blob: JSON.stringify(nftportResult.data),
+            nftport_blob: JSON.stringify({}),
             cat_attributes: values.cat_attributes,
             created_at: Date.now().toString(),
+            skale_link: skaleUpload.data.path,
             version: SCHEMA_VERSION
         });
         console.log("tblLandInsert", tblLandInsert.data);
