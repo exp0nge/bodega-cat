@@ -16,7 +16,7 @@ function navigate(id) {
     if (id > 0) window.location.href = 'view?id=' + id;
 }
 
-export default function NftCard(nftData) {
+export default function NftCard(nftData, mintbaseUrl) {
     return (
         <Center py={6}>
             <Box
@@ -46,19 +46,35 @@ export default function NftCard(nftData) {
                     px={3}>
                     {nftData.cat_attributes}
                 </Text>
-                <Button
-                    w={'full'}
-                    mt={8}
-                    bg={'rgba(171, 191, 244, 1)'}
-                    color={'white'}
-                    rounded={'md'}
-                    onClick={() => navigate(nftData.id)}
-                    _hover={{
-                        transform: 'translateY(-2px)',
-                        boxShadow: 'lg',
-                    }}>
-                    View
-                </Button>
+                <Stack mt={8} direction={'row'} spacing={4}>
+                    <Button
+                        flex={1}
+                        fontSize={'sm'}
+                        rounded={'full'}
+                        onClick={() => navigate(nftData.id)}
+                        _focus={{
+                            bg: 'gray.200',
+                        }}>
+                        View
+                    </Button>
+                    <Button
+                        flex={1}
+                        fontSize={'sm'}
+                        rounded={'full'}
+                        bg={'blue.400'}
+                        color={'white'}
+                        boxShadow={
+                            '0px 1px 25px -5px rgb(66 153 225 / 48%), 0 10px 10px -5px rgb(66 153 225 / 43%)'
+                        }
+                        _hover={{
+                            bg: 'blue.500',
+                        }}
+                        _focus={{
+                            bg: 'blue.500',
+                        }}>
+                        <Link href={mintbaseUrl}>Buy</Link>
+                    </Button>
+                </Stack>
             </Box>
         </Center>
     );

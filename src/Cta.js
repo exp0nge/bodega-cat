@@ -8,7 +8,6 @@ import {
     Button,
     Image,
     Icon,
-    IconButton,
     createIcon,
     IconProps,
     useColorModeValue,
@@ -22,6 +21,7 @@ import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
 import React, { useEffect, useState } from "react";
 import { getAll, formattedDataFromRow } from './tableland-tools';
 import * as L from "leaflet";
+import { getMintbaseInfo } from './mintbase-tools';
 
 const LeafIcon = L.Icon.extend({
     options: {}
@@ -33,16 +33,36 @@ const blueIcon = new LeafIcon({
 
 function createNftCard(nftData) {
     const formattedData = formattedDataFromRow(nftData);
-    console.log("formattedData", formattedData);
+    console.log("nftData", nftData);
+    const mintbaseUrl = nftData[11];
     return (
         <GridItem key={formattedData.id}>
-            {NFTCard(formattedData)}
+            {NFTCard(formattedData, mintbaseUrl)}
         </GridItem>
     );
 }
 
 async function fetchNfts(setHasData) {
     const rows = await getAll();
+    const mintbaseRows = await getMintbaseInfo();
+    rows.forEach(function (part, index) {
+        const mintbaseRow = mintbaseRows.filter(row => {
+            const mintBaseTitle = row.meta.title;
+            const catId = part[0];
+            const catName = part[1].replaceAll(" ", "");
+            const mintbaseCompare = mintBaseTitle.replaceAll(" ", "");
+            const b = catName + catId;
+            const result = mintbaseCompare === b || catName === mintbaseCompare;
+            // console.log("mintbaseCompare === b", mintbaseCompare, b, result);
+            return result;
+        });
+        if (mintbaseRow.length > 0) {
+            const originalRow = this[index];
+            this[index].push(mintbaseRow[0].url);
+        } else {
+            this[index].push("https://testnet.mintbase.io/contract/bodegacats.mintspace2.testnet");
+        }
+    }, rows);
     setHasData(rows);
 }
 
