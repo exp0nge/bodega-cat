@@ -10,5 +10,5 @@ A very sleep cat who enjoys napping most of the day and night.
 
 
 Apprehensive Appa
-She's often not too sure if the pets she will get will make her happy or sad.
+She is often not too sure if the pets she will get will make her happy or sad.
 40.74565657575157, -73.99955147434086
