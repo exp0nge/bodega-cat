@@ -13,7 +13,7 @@ export async function mintUsingNftPort(file, nftDescription) {
         name: "Bodega Cat " + nftDescription.id.toString(),
         description: nftDescription.description,
         mint_to_address: MINT_ADDRESS,
-        chain: "rinkeby"
+        chain: "polygon"
     });
 
     return await axios.post(updatedUrl, formData, {
