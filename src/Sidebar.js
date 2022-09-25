@@ -19,7 +19,7 @@ import {
     FiHome,
     FiTrendingUp,
     FiCompass,
-    FiStar,
+    FiInfo,
     FiPlus,
     FiMenu,
 } from 'react-icons/fi';
@@ -37,6 +37,7 @@ interface LinkItemProps {
 const LinkItems: Array<LinkItemProps> = [
     { name: 'Explore', icon: FiCompass, route: '/' },
     { name: 'Mint', icon: FiPlus, route: '/mint' },
+    { name: 'View', icon: FiInfo, route: '/view' },
 ];
 
 export default function SimpleSidebar({ children }: { children: ReactNode }) {

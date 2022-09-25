@@ -5,6 +5,12 @@ import App from './App';
 import reportWebVitals from './reportWebVitals';
 import * as serviceWorker from './serviceWorker';
 
+
+if (!('process' in window)) {
+  // @ts-ignore
+  window.process = {}
+}
+
 const container = document.getElementById('root');
 const root = ReactDOM.createRoot(container);
 

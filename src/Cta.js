@@ -20,7 +20,7 @@ import {
 import NFTCard from './NftCard';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
 import React, { useEffect, useState } from "react";
-import { getAll } from './tableland-tools';
+import { getAll, formattedDataFromRow } from './tableland-tools';
 import * as L from "leaflet";
 
 const LeafIcon = L.Icon.extend({
@@ -32,17 +32,7 @@ const blueIcon = new LeafIcon({
 })
 
 function createNftCard(nftData) {
-    const formattedData = {
-        id: nftData[0],
-        cat_name: nftData[1],
-        contributor_id: nftData[2],
-        coordinates: nftData[3],
-        picture_href: nftData[4],
-        nftport_blob: nftData[5],
-        cat_attributes: nftData[6],
-        created_at: nftData[7],
-
-    };
+    const formattedData = formattedDataFromRow(nftData);
     console.log("formattedData", formattedData);
     return (
         <GridItem key={formattedData.id}>
@@ -81,7 +71,7 @@ export default function CallToAction() {
                         </Text>
                     </Heading>
                     <Text color={'gray.500'}>
-                        A community to find cats and create NFTs of them! Share your local friendly (optional) bodega cat with your community 🐱
+                        A community (of real humans) to find cats and create NFTs of them! Share your local friendly (optional) bodega cat with your community 🐱
                     </Text>
                 </Stack>
                 <Flex

@@ -13,7 +13,7 @@ import {
     Stack,
     Textarea,
     Tooltip,
-    useClipboard,
+    Divider,
     FormErrorMessage,
     VStack,
     Skeleton
@@ -25,6 +25,10 @@ import { mintUsingNftPort } from './nftport';
 import { uploadImgToNftStorage } from './nftstorage-tools';
 import { put as putTableland, SCHEMA_VERSION } from './tableland-tools';
 import { uploadToSkale } from './skale-tools';
+import { WalletProvider } from './MintbaseWalletContext'
+import { Wallet, Chain, Network, MetadataField } from 'mintbase'
+
+const MINTBASE_KEY = process.env.REACT_APP_MINTBASE;
 
 const confetti = {
     light: {
@@ -45,8 +49,39 @@ function getRandomArbitrary(min, max) {
     return Math.round(Math.random() * (max - min) + min);
 }
 
+// Connect and fetch details
+async function connect(setWallet, setIsConnected, setDetails) {
+    console.log("connect called");
+    const { data: walletData, error } = await new Wallet().init({
+        networkName: Network.testnet,
+        chain: Chain.near,
+        apiKey: MINTBASE_KEY,
+    })
+    console.log("new wallet made, ", walletData, error);
+
+    const { wallet, isConnected } = walletData
+
+    setWallet(wallet);
+
+    if (isConnected) {
+        const resp = await wallet.details()
+        console.log(resp);
+        setDetails(resp.data);
+        setIsConnected(isConnected);
+
+        /*
+          accountId: "qwerty.testnet"
+          allowance: "0.25"
+          balance: "365.77"
+          contractName: "mintbase13.testnet"
+        */
+    } else {
+        wallet.connect({ requestSignIn: true })
+    }
+}
+
 export default function ContactFormWithSocialButtons() {
-    const [isRealHuman, setIsRealHuman] = useState(true);
+    const [isRealHuman, setIsRealHuman] = useState(false);
     const [done, setDone] = useState(false);
     const [hasProof, setProof] = useState({});
     const {
@@ -54,6 +89,14 @@ export default function ContactFormWithSocialButtons() {
         register,
         formState: { errors, isSubmitting },
     } = useForm();
+    const [isConnected, setIsConnected] = useState(false);
+    const [wallet, setWallet] = useState(null);
+    const [details, setDetails] = useState(null);
+
+
+    const nearLoginButtonLabel = isConnected
+        ? `Sign Out ${details.accountId}`
+        : ' Connect NEAR Wallet';
 
     async function onSubmit(values) {
         setDone(true);
@@ -61,11 +104,13 @@ export default function ContactFormWithSocialButtons() {
         const generatedId = getRandomArbitrary(100, 1000000);
         console.log("generatedId", generatedId);
         const fileToUpload = values.picture_location[0];
-        // const nftportResult = await mintUsingNftPort(fileToUpload, {
-        //     id: generatedId,
-        //     description: values.cat_attributes
-        // });
-        // console.log("nftport result", nftportResult.data);
+        console.log("fileToUpload", fileToUpload);
+
+        const nftportResult = await mintUsingNftPort(fileToUpload, {
+            id: generatedId,
+            description: values.cat_attributes
+        });
+        console.log("nftport result", nftportResult.data);
 
         const nftStorage = await uploadImgToNftStorage(fileToUpload);
         console.log("nftStorage result", nftStorage.data.value.cid);
@@ -73,31 +118,67 @@ export default function ContactFormWithSocialButtons() {
         const skaleUpload = await uploadToSkale(fileToUpload);
         console.log("skaleUpload result", skaleUpload.data);
 
+        const { data: fileUploadResult, error: fileError } = await wallet.minter.uploadField(MetadataField.Animation_url, fileToUpload);
+        console.log('uploadField', fileUploadResult);
+        // if (fileError) {
+        //     throw new Error(fileError);
+        // }
+        const store = 'bodegacats';
+        const category = 'Art';
+        wallet.minter.setField(MetadataField.Tags, [category]);
+        const metadata = {
+            title: values.cat_name + " " + generatedId.toString(),
+            description: values.cat_attributes,
+            extra: [],
+            store: store,
+            type: 'NEP171',
+            category: category,
+        };
+        wallet.minter.setMetadata(metadata, true);
+
+        const { data: metadataId, error } = await wallet.minter.getMetadataId();
+        console.log("metadataId", metadataId);
+
         const tblLandInsert = await putTableland({
             id: generatedId,
             cat_name: values.cat_name,
             contributor_id: values.contributor_id,
             coordinates: values.coordinates,
             picture_href: nftStorage.data.value.cid,
-            // nftport_blob: JSON.stringify(nftportResult.data),
-            nftport_blob: JSON.stringify({}),
+            nftport_blob: JSON.stringify(nftportResult.data),
+            // nftport_blob: JSON.stringify({}),
             cat_attributes: values.cat_attributes,
             created_at: Date.now().toString(),
             skale_link: skaleUpload.data.path,
+            mintbase_meta_id: metadataId.toString(),
             version: SCHEMA_VERSION
         });
         console.log("tblLandInsert", tblLandInsert.data);
+
+        const mintbaseResult = await wallet.mint(
+            Number(1),
+            'bodegacats.mintspace2.testnet',
+            undefined,
+            undefined,
+            category,
+            {
+                callbackUrl: `${window.location.origin}/`,
+                meta: JSON.stringify({
+                    type: 'mint',
+                    args: {
+                        contractAddress: store.toString(),
+                        amount: Number(1),
+                        thingId: `${metadataId}:${store.toString()}`,
+                    },
+                }),
+                royaltyPercentage: 0,
+                metadataId,
+            },
+        );
+        console.log("mintbaseResult", mintbaseResult);
         setDone(false);
         window.location.href = "/";
     }
-
-    // useEffect(() => {
-    //     worldID.init("world-id-container", {
-    //         enable_telemetry: true,
-    //         action_id: "wid_staging_c93f74d81132cf2b94e54f2851159583",
-    //         signal: "minting"
-    //     });
-    // });
 
     return (
         <div>
@@ -138,101 +219,129 @@ export default function ContactFormWithSocialButtons() {
                                     debug={true} // to aid with debugging, remove in production
                                 />
                                 }
+                                {!isRealHuman && <Button onClick={() => setIsRealHuman(true)} >Skip</Button>}
                                 {isRealHuman &&
                                     <Stack
                                         spacing={{ base: 4, md: 12, lg: 20 }}
                                         direction={{ base: 'column', md: 'row' }}>
+
                                         <Box
                                             bg={'white'}
                                             borderRadius="lg"
                                             p={12}
                                             color={'gray.700'}
                                             shadow="base">
-                                            <form onSubmit={handleSubmit(onSubmit)}>
-                                                <VStack spacing={5}>
-                                                    <FormControl isRequired>
-                                                        <FormLabel>Cat's Name</FormLabel>
-                                                        <InputGroup>
-                                                            <Input type="text" name="cat_name"
-                                                                {...register('cat_name', {
-                                                                    required: 'This is required',
-                                                                    minLength: { value: 2, message: 'Minimum length should be 4' },
-                                                                })}
-                                                            />
-                                                        </InputGroup>
-                                                    </FormControl>
+                                            <WalletProvider
 
-                                                    <FormControl id="cat_attributes">
-                                                        <FormLabel>Cat's Attributes</FormLabel>
-                                                        <Textarea
-                                                            borderColor="gray.300"
-                                                            _hover={{
-                                                                borderRadius: 'gray.300',
-                                                            }}
-                                                            {...register('cat_attributes', {
-                                                                required: 'This is required',
-                                                                minLength: { value: 2, message: 'Minimum length should be 4' },
-                                                            })}
-                                                        />
-                                                    </FormControl>
+                                                network={Network.testnet}
+                                                chain={Chain.near}
+                                                apiKey={MINTBASE_KEY}
+                                            >
 
-                                                    <FormControl isRequired>
-                                                        <FormLabel>Contributor</FormLabel>
+                                                {!isConnected && <Button
 
-                                                        <InputGroup>
-                                                            <Input
-                                                                type="text"
-                                                                name="contributor_id"
-                                                                {...register('contributor_id', {
-                                                                    required: 'This is required',
-                                                                    minLength: { value: 2, message: 'Minimum length should be 4' },
-                                                                })}
-                                                            />
-                                                        </InputGroup>
-                                                    </FormControl>
+                                                    type="submit"
+                                                    colorScheme="black"
+                                                    bg="black"
+                                                    color="white"
+                                                    _hover={{
+                                                        bg: 'blue.500',
+                                                    }}
+                                                    onClick={() => connect(setWallet, setIsConnected, setDetails)}
+                                                >
+                                                    {nearLoginButtonLabel}
+                                                </Button>}
 
-                                                    <FormControl isRequired>
-                                                        <FormLabel>Coordinates</FormLabel>
+                                                {isConnected &&
+                                                    <form onSubmit={handleSubmit(onSubmit)}>
+                                                        <VStack spacing={5}>
 
-                                                        <InputGroup>
-                                                            <Input
-                                                                type="text"
-                                                                name="coordinates"
-                                                                {...register('coordinates', {
-                                                                    required: 'This is required',
-                                                                    minLength: { value: 2, message: 'Minimum length should be 4' },
-                                                                })}
-                                                            />
-                                                        </InputGroup>
-                                                    </FormControl>
+                                                            <FormControl isRequired>
+                                                                <FormLabel>Cat's Name</FormLabel>
+                                                                <InputGroup>
+                                                                    <Input type="text" name="cat_name"
+                                                                        {...register('cat_name', {
+                                                                            required: 'This is required',
+                                                                            minLength: { value: 2, message: 'Minimum length should be 4' },
+                                                                        })}
+                                                                    />
+                                                                </InputGroup>
+                                                            </FormControl>
 
-                                                    <FormControl isRequired>
-                                                        <FormLabel>Picture</FormLabel>
-                                                        <InputGroup>
-                                                            <Input
-                                                                type="file"
-                                                                name="picture_location"
-                                                                {...register('picture_location', {
-                                                                    required: 'This is required',
-                                                                })}
-                                                            />
-                                                        </InputGroup>
-                                                    </FormControl>
-                                                    <FormErrorMessage>
-                                                        {errors.name && errors.name.message}
-                                                    </FormErrorMessage>
-                                                    <Button
-                                                        type="submit"
-                                                        colorScheme="blue"
-                                                        bg="blue.400"
-                                                        color="white"
-                                                        _hover={{
-                                                            bg: 'blue.500',
-                                                        }}>
-                                                        Submit
-                                                    </Button>
-                                                </VStack>
-                                            </form>
+                                                            <FormControl id="cat_attributes">
+                                                                <FormLabel>Cat's Attributes</FormLabel>
+                                                                <Textarea
+                                                                    borderColor="gray.300"
+                                                                    _hover={{
+                                                                        borderRadius: 'gray.300',
+                                                                    }}
+                                                                    {...register('cat_attributes', {
+                                                                        required: 'This is required',
+                                                                        minLength: { value: 2, message: 'Minimum length should be 4' },
+                                                                    })}
+                                                                />
+                                                            </FormControl>
+
+                                                            <FormControl isRequired>
+                                                                <FormLabel>Contributor</FormLabel>
+
+                                                                <InputGroup>
+                                                                    <Input
+                                                                        type="text"
+                                                                        name="contributor_id"
+                                                                        {...register('contributor_id', {
+                                                                            required: 'This is required',
+                                                                            minLength: { value: 2, message: 'Minimum length should be 4' },
+                                                                        })}
+                                                                    />
+                                                                </InputGroup>
+                                                            </FormControl>
+
+                                                            <FormControl isRequired>
+                                                                <FormLabel>Coordinates</FormLabel>
+
+                                                                <InputGroup>
+                                                                    <Input
+                                                                        type="text"
+                                                                        name="coordinates"
+                                                                        {...register('coordinates', {
+                                                                            required: 'This is required',
+                                                                            minLength: { value: 2, message: 'Minimum length should be 4' },
+                                                                        })}
+                                                                    />
+                                                                </InputGroup>
+                                                            </FormControl>
+
+                                                            <FormControl isRequired>
+                                                                <FormLabel>Picture</FormLabel>
+                                                                <InputGroup>
+                                                                    <Input
+                                                                        type="file"
+                                                                        name="picture_location"
+                                                                        {...register('picture_location', {
+                                                                            required: 'This is required',
+                                                                        })}
+                                                                    />
+                                                                </InputGroup>
+                                                            </FormControl>
+                                                            <FormErrorMessage>
+                                                                {errors.name && errors.name.message}
+                                                            </FormErrorMessage>
+                                                            <Button
+                                                                type="submit"
+                                                                colorScheme="blue"
+                                                                bg="blue.400"
+                                                                color="white"
+                                                                _hover={{
+                                                                    bg: 'blue.500',
+                                                                }}>
+                                                                Submit
+                                                            </Button>
+                                                        </VStack>
+                                                    </form>
+                                                }
+                                            </WalletProvider>
+
                                         </Box>
                                     </Stack>
                                 }

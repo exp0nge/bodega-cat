@@ -13,6 +13,7 @@ import CallToAction from './Cta';
 import Sidebar from './Sidebar';
 import Admin from './Admin';
 import Mint from './Mint';
+import ViewCat from './Details';
 import {
   BrowserRouter as Router,
   Routes,
@@ -31,6 +32,7 @@ function App() {
           <Routes>
             <Route path="/" element={<CallToAction />} />
             <Route path="/mint" element={<Mint />} />
+            <Route path="/view" element={<ViewCat />} />
             <Route path="/admin" element={<Admin />} />
           </Routes>
         </Router>

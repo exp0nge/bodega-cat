@@ -10,7 +10,6 @@ export async function mintUsingNftPort(file, nftDescription) {
     const formData = new FormData();
     formData.append("file", file);
     const updatedUrl = url + new URLSearchParams({
-        chain: 'polygon',
         name: "Bodega Cat " + nftDescription.id.toString(),
         description: nftDescription.description,
         mint_to_address: MINT_ADDRESS,
