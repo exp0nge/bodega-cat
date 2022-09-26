@@ -2,6 +2,11 @@
 
 A community (of real humans) to find cats and create NFTs of them! Share your local friendly (optional) bodega cat with your community 🐱
 
+
+![bodega-1](https://user-images.githubusercontent.com/11747245/192181546-0e8b175b-d2dd-4ea1-84fb-5266d49b7ce1.png)
+![bodega-2](https://user-images.githubusercontent.com/11747245/192181545-0b90a3c3-1cff-48f9-936d-a1d83110f443.jpg)
+![bodega-3](https://user-images.githubusercontent.com/11747245/192181544-8e3142a6-899e-4571-b272-db41d2113bfa.jpg)
+
 ## Inspiration
 
 My sister and I love visiting the neighborhood cats and bodegas are generally a consistent place to find them. We thought others would feel similar for their neighborhood furry friends :)
