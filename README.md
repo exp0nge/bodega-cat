@@ -2,6 +2,7 @@
 
 A community (of real humans) to find cats and create NFTs of them! Share your local friendly (optional) bodega cat with your community 🐱
 
+https://ethglobal.com/showcase/bodega-cat-3qgtf
 
 ![bodega-1](https://user-images.githubusercontent.com/11747245/192181546-0e8b175b-d2dd-4ea1-84fb-5266d49b7ce1.png)
 ![bodega-2](https://user-images.githubusercontent.com/11747245/192181545-0b90a3c3-1cff-48f9-936d-a1d83110f443.jpg)
