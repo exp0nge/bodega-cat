@@ -2,5 +2,7 @@
     "appService.zipIgnorePattern": [
         "node_modules{,/**}",
         ".vscode{,/**}"
-    ]
+    ],
+    "appService.defaultWebAppToDeploy": "/subscriptions/c5cbb939-e3ab-4b96-b593-c06debf2fd24/AppServices/subscriptions/c5cbb939-e3ab-4b96-b593-c06debf2fd24/resourceGroups/trail-conservation_group/providers/Microsoft.Web/sites/bodega-cat-backend",
+    "appService.deploySubpath": "."
 }

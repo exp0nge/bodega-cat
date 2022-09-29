@@ -1,15 +1,12 @@
 import axios from 'axios';
 
-const apiKey = process.env.REACT_APP_NFTSTORAGE;
+// const url = "http://localhost:3001/nftstorage";
+const url = "https://bodega-cat-backend.azurewebsites.net/nftstorage";
 
 export async function uploadImgToNftStorage(file) {
     const formData = new FormData();
     formData.append("file", file, "file.jpeg");
 
-    return axios.post("https://api.nft.storage/upload", formData, {
-        headers: {
-            'Authorization': `Bearer ${apiKey}`,
-            'Content-Type': 'image/jpeg'
-        }
-    });
+    return axios.post(url + "/upload", formData);
+
 }

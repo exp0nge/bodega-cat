@@ -41,6 +41,7 @@ function createNftCard(nftData) {
 
 async function fetchNfts(setHasData) {
     const rows = await getAll();
+    console.log("rows", rows);
     const mintbaseRows = await getMintbaseInfo();
     rows.forEach(function (part, index) {
         const mintbaseRow = mintbaseRows.filter(row => {

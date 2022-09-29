@@ -3,6 +3,9 @@ var router = express.Router();
 const Filestorage = require('@skalenetwork/filestorage.js');
 const Web3 = require('web3');
 const multer = require('multer');
+const tableLand = require('./tableland-tools');
+const nftport = require('./nftport');
+const nftstorage = require('./nftstorage-tools');
 
 var storage = multer.memoryStorage();
 var upload = multer({ storage: storage });
@@ -40,7 +43,35 @@ async function uploadToSkale(file) {
 router.post('/skale/upload', upload.single("file"), async function (req, res, next) {
   const response = await uploadToSkale(req.file);
   console.log(response);
-  res.json({ "path": response });
+  return res.json({ "path": response });
 });
+
+router.post('/tableland/put', async function (req, res, next) {
+  const response = await tableLand.put(req.body.k);
+  return res.json({ "response": response });
+});
+
+router.post('/tableland/get', async function (req, res, next) {
+  const response = await tableLand.get(req.body.id);
+  return res.json({ "row": response });
+});
+
+router.get('/tableland/getAll', async function (req, res, next) {
+  const response = await tableLand.getAll();
+  return res.json({ "rows": response });
+});
+
+router.post('/nftport/mint', upload.single("file"), async function (req, res, next) {
+  console.log("nftport mint", req.body);
+  const response = await nftport.mintUsingNftPort(req.file, JSON.parse(req.body.description));
+  return res.json(response.data);
+});
+
+router.post('/nftstorage/upload', upload.single("file"), async function (req, res, next) {
+  const response = await nftstorage.uploadImgToNftStorage(req.file);
+  return res.json(response.data);
+});
+
+
 
 module.exports = router;
